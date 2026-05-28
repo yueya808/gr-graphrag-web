@@ -58,10 +58,10 @@ OLLAMA_NUM_THREAD = int(os.getenv("OLLAMA_NUM_THREAD", str(max(2, (os.cpu_count(
 OLLAMA_NUM_GPU = int(os.getenv("OLLAMA_NUM_GPU", "0" if OLLAMA_FORCE_CPU else "1"))
 '''
 
-NEO4J_URI = "neo4j+s://01a0e5bf.databases.neo4j.io"
-NEO4J_USER = "01a0e5bf"
-NEO4J_PASSWORD = "JZ920NcZWJmZe3Cc3WjYNouz7hOvk1Qxr8XfPSPRjXU"
-NEO4J_DATABASE = "01a0e5bf"
+NEO4J_URI = os.getenv("NEO4J_URI", "neo4j+s://01a0e5bf.databases.neo4j.io")
+NEO4J_USER = os.getenv("NEO4J_USER", "01a0e5bf")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "JZ920NcZWJmZe3Cc3WjYNouz7hOvk1Qxr8XfPSPRjXU")
+NEO4J_DATABASE = os.getenv("NEO4J_DATABASE", "01a0e5bf")
 
 # 移除 OLLAMA 相关的环境变量，添加 SILICONFLOW，AI辅助生成，deepseek,2026-05-03
 SILICONFLOW_API_KEY = os.environ.get("SILICONFLOW_API_KEY", "") or os.environ.get("GROQ_API_KEY", "")
