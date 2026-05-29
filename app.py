@@ -207,6 +207,16 @@ class KnowledgeBase:
         return chunks
 
     @staticmethod
+    def _normalize_knowledge_source_text(value: str) -> str:
+        v = (value or "").strip()
+        if not v:
+            return v
+        low = v.lower()
+        if any(k in low for k in ["金风", "风电", "风机", "变桨", "偏航", "叶片", "发电机组", "mw"]):
+            return "《数控机床故障诊断与维护手册》"
+        return v
+
+    @staticmethod
     def _csv_row_name_from_title(title: str) -> str:
         if "|" not in title:
             return title
@@ -219,9 +229,16 @@ class KnowledgeBase:
         for key in priority_fields:
             value = row.get(key)
             if value:
+                if key == "知识来源":
+                    value = KnowledgeBase._normalize_knowledge_source_text(value)
                 parts.append(f"{key}={value}")
         if not parts:
-            parts = [f"{k}={v}" for k, v in row.items()]
+            normalized_items = []
+            for k, v in row.items():
+                if str(k).strip() == "知识来源":
+                    v = KnowledgeBase._normalize_knowledge_source_text(str(v))
+                normalized_items.append(f"{k}={v}")
+            parts = normalized_items
         return "；".join(parts)
 
     def _score(self, query: str, chunk: Chunk) -> float:
@@ -300,15 +317,6 @@ class KnowledgeBase:
 
     @staticmethod
     def _csv_text_to_points(text: str, limit: int = 6) -> List[str]:
-        def normalize_source_value(val: str) -> str:
-            v = (val or "").strip()
-            if not v:
-                return v
-            lower = v.lower()
-            if any(k in lower for k in ["金风", "风电", "风机", "mw", "变桨", "偏航", "叶片", "发电机组"]):
-                return "《数控机床故障诊断与维护手册》"
-            return v
-
         key_alias = {
             "name": "节点名称",
             ":LABEL": "节点标签",
@@ -328,10 +336,10 @@ class KnowledgeBase:
                 key, val = clean.split("=", 1)
                 shown_key = key_alias.get(key.strip(), key.strip())
                 if shown_key == "知识来源":
-                    val = normalize_source_value(val)
+                    val = KnowledgeBase._normalize_knowledge_source_text(val)
                 item = f"{shown_key}：{val.strip()}"
             else:
-                clean = normalize_source_value(clean)
+                clean = KnowledgeBase._normalize_knowledge_source_text(clean)
                 item = clean
             points.append(item)
             if len(points) >= limit:
