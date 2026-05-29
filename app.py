@@ -78,19 +78,19 @@ USER_ROLE_ADMIN = "admin"
 
 
 FAQ_POOL = [
-    "什么是RAG，为什么适合工业故障问答？",
-    "学生没有企业数据，如何零成本搭建系统？",
-    "如何用Manualslib快速搭建文本知识库？",
-    "有哪些免费工业故障图像数据集可直接使用？",
-    "IBM FailureSensorIQ数据集可以怎么用？",
-    "如果我想做多模态故障诊断，第一步应该做什么？",
-    "振动信号研究可以使用哪些公开数据集？",
-    "如何把FAQ和向量检索结合起来提高命中率？",
     "数控机床主轴振动过大的常见原因有哪些？",
     "主轴轴承温度超过70℃应该怎么处理？",
     "数控机床加工精度超差的常见原因是什么？",
     "液压站压力建立不起来应如何排查？",
     "伺服电机过热报警时应如何处理？",
+    "刀库乱刀时应该如何快速恢复？",
+    "冷却液不出水或流量不足应该如何处理？",
+    "丝杠反向间隙过大如何检测与补偿？",
+    "回参考点失败通常与哪些部件有关？",
+    "数控系统黑屏但电源正常时如何排查？",
+    "接地不良会引发哪些数控机床故障？",
+    "排屑机卡死后应按什么顺序处理？",
+    "加工出现锥度时应优先检查哪些项？",
 ]
 
 GLOSSARY = {
@@ -300,6 +300,15 @@ class KnowledgeBase:
 
     @staticmethod
     def _csv_text_to_points(text: str, limit: int = 6) -> List[str]:
+        def normalize_source_value(val: str) -> str:
+            v = (val or "").strip()
+            if not v:
+                return v
+            lower = v.lower()
+            if any(k in lower for k in ["金风", "风电", "风机", "mw", "变桨", "偏航", "叶片", "发电机组"]):
+                return "《数控机床故障诊断与维护手册》"
+            return v
+
         key_alias = {
             "name": "节点名称",
             ":LABEL": "节点标签",
@@ -318,8 +327,11 @@ class KnowledgeBase:
             if "=" in clean:
                 key, val = clean.split("=", 1)
                 shown_key = key_alias.get(key.strip(), key.strip())
+                if shown_key == "知识来源":
+                    val = normalize_source_value(val)
                 item = f"{shown_key}：{val.strip()}"
             else:
+                clean = normalize_source_value(clean)
                 item = clean
             points.append(item)
             if len(points) >= limit:
@@ -430,9 +442,9 @@ class KnowledgeBase:
             count = max(1, min(count, len(self.qa_pairs)))
             return [item["question"] for item in random.sample(self.qa_pairs, k=count)]
         fallback = [
-            "什么是RAG，为什么适合工业故障问答？",
-            "学生没有企业数据，如何零成本搭建系统？",
-            "如何用Manualslib快速搭建文本知识库？",
+            "数控机床主轴振动过大的常见原因有哪些？",
+            "主轴轴承温度超过70℃应该怎么处理？",
+            "冷却液不出水或流量不足应该如何处理？",
         ]
         count = max(1, min(count, len(fallback)))
         return random.sample(fallback, k=count)
@@ -852,7 +864,7 @@ KB_PATHS = [
 ]
 CSV_KB_DIR = BASE_DIR / "csv文件"
 CHROMA_DB_DIR = BASE_DIR / "chroma_db"
-CASE_SOURCE_CSV_PATH = BASE_DIR / "csv新" / "风电故障诊断图谱说明.csv"
+CASE_SOURCE_CSV_PATH = BASE_DIR / "csv新" / "数控机床故障诊断图谱说明.csv"
 CASE_SOURCE_LITERATURES = [
     "变转速工况下数控机床滚动轴承智能故障诊断研究",
     "基于时频图与卷积神经网络的轴承故障分类研究",
@@ -2284,7 +2296,7 @@ def ensure_complete_sentences(text: str) -> str:
 
 FAULT_KEYWORDS = {
     "故障", "异常", "报警", "告警", "停机", "检修", "维修", "排查", "诊断", "根因", "失效",
-    "轴承", "齿轮箱", "主轴", "叶片", "发电机", "变桨", "偏航", "温度", "振动", "电流", "润滑", "油温",
+    "轴承", "主轴", "丝杠", "导轨", "刀库", "刀具", "伺服", "液压", "冷却液", "温度", "振动", "电流", "润滑", "油温",
 }
 CASUAL_PATTERNS = re.compile(r"^(你好|您好|hi|hello|在吗|谢谢|再见|讲个笑话|今天天气|你是谁|介绍一下)")
 

@@ -2158,7 +2158,7 @@ function renderEvidence(evidence) {
     <div class="evidence-meta"></div>
     <div class="evidence-grid">
       <div>
-        <h3>文本证据（RAG）</h3>
+        <h3>文本证据（GraphRAG）</h3>
         <div class="evidence-list kb-evidence-list"></div>
       </div>
       ${directAnswer ? "" : `
