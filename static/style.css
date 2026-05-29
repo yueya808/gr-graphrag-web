@@ -2610,3 +2610,14 @@ button:hover,
     padding: 40px 30px;
   }
 }
+
+/* Login/Register page primary button override (blue) */
+.login-panel .login-btn {
+  background: #3f66f2 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.login-panel .login-btn:hover {
+  background: #3457d6 !important;
+}
